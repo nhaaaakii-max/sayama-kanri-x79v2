@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- 検索エンジンに登録させないためのセキュリティ設定 -->
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メーカー説明会管理｜さやま総合クリニック</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+  :root {
+    --primary: #4A4299;
+    --primary-light: #EEEDFE;
+    --primary-mid: #7F77DD;
+    --text: #1a1a2e;
+    --text-secondary: #6b6b8a;
+    --bg: #F7F7FB;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.09);
+    --border-mid: rgba(0,0,0,0.15);
+    --danger: #D85A30;
+    --danger-light: #FAECE7;
+    --success: #3B6D11;
+    --success-light: #EAF3DE;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+    /* iPhoneのノッチやDynamic Island対策の余白を追加 */
+    padding-top: env(safe-area-inset-top);
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.02em;
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 1px;
+  }
+
+  .sync-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+
+  .sync-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-ok { background: #639922; }
+  .dot-loading { background: #BA7517; animation: pulse 1s infinite; }
+  .dot-error { background: var(--danger); }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    gap: 4px;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+
+  .tab-icon { font-size: 16px; }
+
+  main { padding: 16px; max-width: 680px; margin: 0 auto; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* カード */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  /* フォーム */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-group label { font-size: 11px; color: var(--text-secondary); display: block; margin-bottom: 4px; font-weight: 500; letter-spacing: 0.03em; }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    padding: 9px 12px;
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--primary-mid); }
+  .form-group textarea { height: 72px; resize: vertical; }
+
+  /* 医師セレクター */
+  .doc-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    max-height: 220px;
+    overflow-y: auto;
+    margin-top: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .dept-label {
+    width: 100%;
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    margin: 4px 0 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .doc-chip {
+    background: var(--surface);
+    border: 1px solid var(--border-mid);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.12s;
+    user-select: none;
+  }
+
+  .doc-chip:hover { border-color: var(--primary-mid); }
+  .doc-chip.selected { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+  .doc-chip .ext { font-size: 10px; color: var(--primary-mid); font-weight: 500; }
+  .doc-chip.selected .ext { color: var(--primary); }
+
+  /* ボタン */
+  .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    font-size: 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: #3C3489; }
+  .btn-primary:disabled { background: #AFA9EC; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: none;
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    padding: 9px 16px;
+    font-size: 13px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.12s;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  .btn-danger {
+    background: none;
+    border: 1px solid rgba(216,90,48,0.3);
+    border-radius: var(--radius-sm);
+    padding: 5px 10px;
+    font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    color: var(--danger);
+    transition: background 0.12s;
+  }
+  .btn-danger:hover { background: var(--danger-light); }
+
+  /* セッションカード */
+  .session-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.15s;
+  }
+  .session-card:hover { box-shadow: 0 2px 12px rgba(74,66,153,0.08); }
+
+  .session-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .session-maker { font-size: 15px; font-weight: 700; }
+  .session-meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+    background: #E6F1FB;
+    color: #0C447C;
+    font-weight: 700;
+  }
+
+  .doc-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .doc-tag {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  /* チェックリスト */
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+  .stat-card { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .stat-label { font-size: 10px; color: var(--text-secondary); font-weight: 700; letter-spacing: 0.03em; margin-bottom: 4px; }
+  .stat-val { font-size: 24px; font-weight: 700; }
+
+  .progress-bg { background: var(--border); border-radius: 4px; height: 6px; margin-bottom: 14px; }
+  .progress-bar { height: 6px; border-radius: 4px; background: var(--primary); transition: width 0.3s; }
+
+  .check-table { width: 100%; border-collapse: collapse; }
+  .check-table th {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    letter-spacing: 0.03em;
+  }
+  .check-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .check-table tr.checked td { color: var(--text-secondary); text-decoration: line-through; }
+  .check-table tr.checked { background: var(--bg); }
+  .check-table input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  .empty-icon { font-size: 36px; display: block; margin-bottom: 8px; }
+
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid #AFA9EC;
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hint { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+  .print-note { font-size: 11px; color: var(--text-secondary); margin-top: 12px; }
+
+  @media print {
+    header, .tabs, .btn-row, .btn-danger, .print-note, #sec-list, #sec-new { display: none !important; }
+    .section { display: block !important; }
+    #sec-checklist { display: block !important; }
+    body { background: white; }
+    .card { box-shadow: none; border: none; }
+  }
+
+  @media (max-width: 480px) {
+    .form-row { grid-template-columns: 1fr; }
+    .stat-row { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .stat-val { font-size: 20px; }
+    /* スマホ用にタップ領域を少し広げる調整 */
+    .doc-chip { padding: 6px 14px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-title">メーカー説明会管理</div>
+    <div class="header-sub">さやま総合クリニック</div>
+  </div>
+  <div class="sync-pill" onclick="loadAll()">
+    <div class="sync-dot dot-loading" id="sync-dot"></div>
+    <span id="sync-status">読み込み中...</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('list')">
+    <span class="tab-icon">📋</span>説明会一覧
+  </button>
+  <button class="tab-btn" onclick="switchTab('new')">
+    <span class="tab-icon">➕</span>新規登録
+  </button>
+  <button class="tab-btn" onclick="switchTab('checklist')">
+    <span class="tab-icon">✅</span>当日チェック
+  </button>
+</div>
+
+<main>
+
+  <!-- 一覧 -->
+  <div id="sec-list" class="section active">
+    <div id="sessions-container">
+      <div class="empty-state"><span class="spinner"></span>読み込み中...</div>
+    </div>
+  </div>
+
+  <!-- 新規登録 -->
+  <div id="sec-new" class="section">
+    <div class="card">
+      <div class="card-title">説明会情報の登録</div>
+      <div class="form-row">
+        <div class="form-group"><label>メーカー名 *</label><input type="text" id="f-maker" placeholder="例：田辺三菱製薬"></div>
+        <div class="form-group"><label>担当者名</label><input type="text" id="f-person" placeholder="例：山田 太郎"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>開催日 *</label><input type="date" id="f-date"></div>
+        <div class="form-group"><label>開催時間</label><input type="time" id="f-time"></div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group"><label>製品・テーマ</label><input type="text" id="f-theme" placeholder="例：〇〇錠 新適応追加について"></div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>参加医師（タップして選択）</label>
+          <div class="doc-selector" id="doc-selector"></div>
+          <p class="hint">選択済み：<span id="selected-count">0</span>名</p>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group"><label>備考</label><textarea id="f-note" placeholder="場所・使用機器など"></textarea></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="save-btn" onclick="saveSession()">💾 登録する</button>
+        <button class="btn-secondary" onclick="clearForm()">クリア</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 当日チェック -->
+  <div id="sec-checklist" class="section">
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;">
+        <div class="form-group" style="flex:1;">
+          <label>説明会を選択</label>
+          <select id="checklist-select" onchange="renderChecklist()" style="margin-top:4px;"></select>
+        </div>
+        <button class="btn-secondary" onclick="resetChecks()" style="white-space:nowrap;flex-shrink:0;">🔄 リセット</button>
+      </div>
+    </div>
+    <div id="checklist-body">
+      <div class="empty-state">説明会を選択してください。</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwgpx0IAqmgLZplXkXlFFAwo3LsLnOkyUddtzDP__QmnMAI-Zi6nYOxy9ZFBLM_Hr52SQ/exec';
+
+const ALL_DOCTORS = [
+  { dept:"診療部", name:"菅野院長", ext:"3601" },
+  { dept:"診療部", name:"扇一副院長", ext:"3603" },
+  { dept:"診療部", name:"熊谷副院長", ext:"3606" },
+  { dept:"診療部", name:"太田医師", ext:"3605" },
+  { dept:"診療部", name:"三好医師", ext:"3616" },
+  { dept:"診療部", name:"今関医師", ext:"3607" },
+  { dept:"診療部", name:"沢田医師", ext:"3608" },
+  { dept:"診療部", name:"菅原医師", ext:"3611" },
+  { dept:"診療部", name:"大和田医師", ext:"3615" },
+  { dept:"診療部", name:"杉山医師", ext:"3620" },
+  { dept:"診療部", name:"川崎医師", ext:"3621" },
+  { dept:"診療部", name:"西村医師", ext:"3622" },
+  { dept:"診療部", name:"古谷医師", ext:"3623" },
+  { dept:"診療部", name:"新田医師", ext:"3624" },
+  { dept:"診療部", name:"大西医師", ext:"3625" },
+  { dept:"診療部", name:"永井医師", ext:"3626" },
+  { dept:"診療部", name:"齊藤医師", ext:"3628" },
+  { dept:"診療部", name:"巴医師", ext:"3629" },
+  { dept:"診療部", name:"江浦医師", ext:"3630" },
+  { dept:"診療部", name:"畠中医師", ext:"3631" },
+  { dept:"診療部", name:"松岡医師", ext:"3632" },
+  { dept:"診療部", name:"上村医師", ext:"3634" },
+  { dept:"診療部 健診センター", name:"田村医師", ext:"3609" },
+  { dept:"診療部 健診センター", name:"小林医師", ext:"3614" },
+  { dept:"診療部 健診センター", name:"中川医師", ext:"3633" },
+];
+
+let sessions = [];
+let selectedDocs = new Set();
+let checkStates = {};
+let currentTab = 'list';
+
+function setSyncStatus(state, msg) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot ' + (state==='ok'?'dot-ok':state==='loading'?'dot-loading':'dot-error');
+  document.getElementById('sync-status').textContent = msg;
+}
+
+async function apiGet() {
+  const res = await fetch(GAS_URL, { method: 'GET' });
+  const text = await res.text();
+  return JSON.parse(text);
+}
+
+async function apiPost(data) {
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(data)
+  });
+  const text = await res.text();
+  return JSON.parse(text);
+}
+
+async function loadAll() {
+  setSyncStatus('loading', '読み込み中...');
+  try {
+    const data = await apiGet();
+    sessions = Array.isArray(data.sessions) ? data.sessions : [];
+    checkStates = (data.checks && typeof data.checks === 'object') ? data.checks : {};
+    const now = new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    setSyncStatus('ok', `${now} 更新（${sessions.length}件）`);
+  } catch(e) {
+    sessions = [];
+    checkStates = {};
+    setSyncStatus('error', '読み込み失敗');
+  }
+  renderSessions();
+  updateChecklistSelect();
+}
+
+async function persist() {
+  await apiPost({ sessions, checks: checkStates });
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['list','new','checklist'][i]===tab));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-'+tab).classList.add('active');
+  if (tab === 'checklist') updateChecklistSelect();
+}
+
+function renderDocSelector() {
+  const c = document.getElementById('doc-selector');
+  const depts = [...new Set(ALL_DOCTORS.map(d=>d.dept))];
+  c.innerHTML = '';
+  depts.forEach(dept => {
+    const lbl = document.createElement('div');
+    lbl.className = 'dept-label';
+    lbl.textContent = dept;
+    c.appendChild(lbl);
+    ALL_DOCTORS.filter(d=>d.dept===dept).forEach(doc => {
+      const chip = document.createElement('div');
+      chip.className = 'doc-chip' + (selectedDocs.has(doc.name) ? ' selected' : '');
+      chip.innerHTML = `${doc.name}<span class="ext">${doc.ext}</span>`;
+      chip.onclick = () => {
+        selectedDocs.has(doc.name) ? selectedDocs.delete(doc.name) : selectedDocs.add(doc.name);
+        chip.classList.toggle('selected');
+        document.getElementById('selected-count').textContent = selectedDocs.size;
+      };
+      c.appendChild(chip);
+    });
+  });
+}
+
+function clearForm() {
+  ['f-maker','f-person','f-date','f-time','f-theme','f-note'].forEach(id => document.getElementById(id).value='');
+  selectedDocs.clear();
+  renderDocSelector();
+  document.getElementById('selected-count').textContent = '0';
+}
+
+async function saveSession() {
+  const maker = document.getElementById('f-maker').value.trim();
+  const date = document.getElementById('f-date').value;
+  if (!maker || !date) { alert('メーカー名と開催日は必須です。'); return; }
+  const docs = ALL_DOCTORS.filter(d => selectedDocs.has(d.name));
+  const newSession = {
+    id: Date.now(),
+    maker,
+    person: document.getElementById('f-person').value.trim(),
+    date,
+    time: document.getElementById('f-time').value,
+    theme: document.getElementById('f-theme').value.trim(),
+    note: document.getElementById('f-note').value.trim(),
+    docs
+  };
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>保存中...';
+  setSyncStatus('loading', '保存中...');
+  try {
+    sessions.unshift(newSession);
+    await persist();
+    const now = new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    setSyncStatus('ok', `${now} 保存完了（${sessions.length}件）`);
+    clearForm();
+    renderSessions();
+    updateChecklistSelect();
+    switchTab('list');
+  } catch(e) {
+    sessions.shift();
+    setSyncStatus('error', '保存失敗');
+    alert('保存に失敗しました。ネットワーク接続を確認してください。');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '💾 登録する';
+}
+
+async function deleteSession(id) {
+  if (!confirm('この説明会を削除しますか？')) return;
+  sessions = sessions.filter(s => s.id != id);
+  setSyncStatus('loading', '削除中...');
+  try {
+    await persist();
+    const now = new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    setSyncStatus('ok', `${now} 更新（${sessions.length}件）`);
+  } catch {
+    setSyncStatus('error', '削除失敗');
+  }
+  renderSessions();
+  updateChecklistSelect();
+}
+
+function renderSessions() {
+  const c = document.getElementById('sessions-container');
+  if (!sessions.length) {
+    c.innerHTML = '<div class="empty-state"><span class="empty-icon">📅</span>登録された説明会はありません。<br>「新規登録」から追加してください。</div>';
+    return;
+  }
+  const sorted = [...sessions].sort((a,b) => b.date.localeCompare(a.date));
+  c.innerHTML = sorted.map(s => {
+    const dateStr = s.date ? new Date(s.date+'T00:00:00').toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) : '';
+    const docNames = (s.docs||[]).map(d=>`<span class="doc-tag">${d.name}</span>`).join('');
+    return `<div class="session-card">
+      <div class="session-header">
+        <div style="flex:1;">
+          <div class="session-maker">${s.maker}<span class="badge">${(s.docs||[]).length}名</span></div>
+          <div class="session-meta">${dateStr}${s.time?' '+s.time:''} ${s.person?'｜ 担当：'+s.person:''}</div>
+          ${s.theme?`<div class="session-meta">${s.theme}</div>`:''}
+        </div>
+        <button class="btn-danger" onclick="deleteSession(${s.id})">削除</button>
+      </div>
+      <div class="doc-tags">${docNames||'<span style="font-size:11px;color:var(--text-secondary);">参加医師未登録</span>'}</div>
+      ${s.note?`<div style="font-size:11px;color:var(--text-secondary);margin-top:8px;">📝 ${s.note}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function updateChecklistSelect() {
+  const sel = document.getElementById('checklist-select');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- 説明会を選んでください --</option>';
+  [...sessions].sort((a,b)=>b.date.localeCompare(a.date)).forEach(s => {
+    const dateStr = s.date ? new Date(s.date+'T00:00:00').toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}) : '';
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = `${dateStr} ${s.maker}（${(s.docs||[]).length}名）`;
+    sel.appendChild(opt);
+  });
+  if (sessions.find(s=>s.id==cur)) sel.value = cur;
+  if (currentTab === 'checklist') renderChecklist();
+}
+
+function renderChecklist() {
+  const id = document.getElementById('checklist-select').value;
+  const body = document.getElementById('checklist-body');
+  if (!id) { body.innerHTML='<div class="empty-state">説明会を選択するとチェックリストが表示されます。</div>'; return; }
+  const s = sessions.find(x=>x.id==id);
+  if (!s) return;
+  if (!checkStates[id]) checkStates[id]={};
+  const docs = s.docs || [];
+  const total = docs.length;
+  const checked = docs.filter(d=>checkStates[id][d.name]).length;
+  const pct = total>0 ? Math.round(checked/total*100) : 0;
+  const dateStr = s.date ? new Date(s.date+'T00:00:00').toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'}) : '';
+  body.innerHTML = `
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:15px;font-weight:700;">${s.maker}</div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">${dateStr}${s.time?' '+s.time:''} ${s.person?'｜ '+s.person:''}</div>
+      ${s.theme?`<div style="font-size:11px;color:var(--text-secondary);">${s.theme}</div>`:''}
+    </div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">対象医師数</div><div class="stat-val">${total}</div></div>
+      <div class="stat-card"><div class="stat-label">確認済み</div><div class="stat-val" style="color:var(--primary);" id="cnt-checked">${checked}</div></div>
+      <div class="stat-card"><div class="stat-label">未確認</div><div class="stat-val" style="color:var(--danger);" id="cnt-remain">${total-checked}</div></div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary);margin-bottom:6px;"><span>出席確認率</span><span id="pct-label">${pct}%</span></div>
+      <div class="progress-bg"><div class="progress-bar" id="prog-bar" style="width:${pct}%"></div></div>
+    </div>
+    ${total===0?'<div class="empty-state">参加医師が登録されていません。</div>':`
+    <div class="card" style="padding:0;overflow:hidden;">
+    <table class="check-table">
+      <thead><tr><th style="width:44px;">確認</th><th>氏名</th><th>内線</th></tr></thead>
+      <tbody>${docs.map(d=>`
+        <tr class="${checkStates[id][d.name]?'checked':''}" id="row-${id}-${d.ext}">
+          <td><input type="checkbox" ${checkStates[id][d.name]?'checked':''} onchange="toggleCheck('${id}','${d.name}','${d.ext}')"></td>
+          <td style="font-weight:500;">${d.name}</td>
+          <td style="font-family:monospace;font-size:13px;color:var(--primary);">${d.ext}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    <p class="print-note">🖨️ ブラウザの印刷機能でチェックリストを印刷できます。</p>
+    `}`;
+}
+
+async function toggleCheck(sessId, name, ext) {
+  if (!checkStates[sessId]) checkStates[sessId]={};
+  checkStates[sessId][name] = !checkStates[sessId][name];
+  const row = document.getElementById('row-'+sessId+'-'+ext);
+  if (row) row.className = checkStates[sessId][name]?'checked':'';
+  const s = sessions.find(x=>x.id==sessId);
+  if (s) {
+    const docs = s.docs||[];
+    const total = docs.length;
+    const checked = docs.filter(d=>checkStates[sessId][d.name]).length;
+    const pct = total>0?Math.round(checked/total*100):0;
+    const el = id => document.getElementById(id);
+    if(el('cnt-checked')) el('cnt-checked').textContent = checked;
+    if(el('cnt-remain')) el('cnt-remain').textContent = total-checked;
+    if(el('pct-label')) el('pct-label').textContent = pct+'%';
+    if(el('prog-bar')) el('prog-bar').style.width = pct+'%';
+  }
+  await persist();
+}
+
+async function resetChecks() {
+  const id = document.getElementById('checklist-select').value;
+  if (!id||!confirm('チェックをすべてリセットしますか？')) return;
+  checkStates[id]={};
+  await persist();
+  renderChecklist();
+}
+
+renderDocSelector();
+loadAll();
+</script>
+</body>
+</html>
